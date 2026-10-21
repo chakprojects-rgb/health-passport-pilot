@@ -28,6 +28,15 @@ export default function RootLayout() {
         }} 
       />
       <Tabs.Screen 
+        name="exercises" 
+        options={{ 
+          title: 'Exercises',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ color, fontSize: 24 }}>💪</Text>
+          )
+        }} 
+      />
+      <Tabs.Screen 
         name="copilot" 
         options={{ 
           title: 'AI Copilot',

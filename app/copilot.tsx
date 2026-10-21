@@ -1,73 +1,298 @@
-import { View, Text, ScrollView, TextInput } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { chatWithCopilot, generateWorkoutPlan } from '../lib/ai-copilot';
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  header: {
+    paddingTop: 60,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    backgroundColor: '#f0fdf4',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: 16,
+  },
+  chatSection: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  messageContainer: {
+    marginBottom: 12,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  assistantMessage: {
+    backgroundColor: '#f0fdf4',
+    borderColor: '#bbf7d0',
+  },
+  userMessage: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+    alignSelf: 'flex-end',
+  },
+  messageLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  assistantLabel: {
+    color: '#166534',
+  },
+  userLabel: {
+    color: '#1e40af',
+  },
+  messageText: {
+    fontSize: 14,
+    color: '#374151',
+  },
+  loadingContainer: {
+    marginBottom: 12,
+    padding: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 8,
+  },
+  inputContainer: {
+    padding: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  textInput: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#111827',
+    minHeight: 80,
+  },
+  buttonContainer: {
+    marginTop: 12,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  sendButton: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#9ca3af',
+  },
+  sendButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  featuresSection: {
+    marginTop: 24,
+  },
+  featureCard: {
+    marginBottom: 12,
+    padding: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  featureDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+});
 
 export default function CopilotTab() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: 'assistant',
+      content: 'Hello! I\'m your AI training assistant. I can help you with workout planning, exercise suggestions, and answer questions about your training data.'
+    }
+  ]);
+  const [inputText, setInputText] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSendMessage = async () => {
+    if (!inputText.trim()) return;
+
+    const userMessage = inputText.trim();
+    setInputText('');
+    
+    // Add user message
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setLoading(true);
+
+    try {
+      // Check if the user is asking for a workout plan
+      const isWorkoutRequest = userMessage.toLowerCase().includes('workout') || 
+                               userMessage.toLowerCase().includes('plan') ||
+                               userMessage.toLowerCase().includes('routine');
+
+      let response: string;
+      
+      if (isWorkoutRequest) {
+        // Use workout plan generator
+        const plan = await generateWorkoutPlan(userMessage);
+        response = `## ${plan.summary}\n\n### Exercises:\n${plan.exercises.map(ex => 
+          `- **${ex.name}**: ${ex.sets} sets × ${ex.reps} reps${ex.weight ? ` @ ${ex.weight}` : ''}${ex.rpe ? ` (RPE ${ex.rpe})` : ''}${ex.notes ? `\n  Note: ${ex.notes}` : ''}`
+        ).join('\n')}\n\n### Reasoning:\n${plan.reasoning}`;
+      } else {
+        // Use general chat
+        const conversationHistory = messages.map(m => ({
+          role: m.role,
+          content: m.content
+        }));
+        response = await chatWithCopilot(userMessage, conversationHistory);
+      }
+
+      // Add AI response
+      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+    } catch (error: any) {
+      console.error('Error in AI chat:', error);
+      Alert.alert('Error', error.message || 'Failed to get response from AI. Please try again.');
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Sorry, I encountered an error. Please try again.' 
+      }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <View className="flex-1 bg-white">
-      <View className="pt-12 pb-4 px-4 bg-green-50">
-        <Text className="text-2xl font-bold text-gray-900">AI Copilot</Text>
-        <Text className="text-gray-600 mt-1">Your intelligent training assistant</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>AI Copilot</Text>
+        <Text style={styles.subtitle}>Your intelligent training assistant</Text>
       </View>
       
-      <ScrollView className="flex-1">
-        <View className="p-4">
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.content}>
           {/* Chat Interface */}
-          <View className="mb-4">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">Chat</Text>
+          <View style={styles.chatSection}>
+            <Text style={styles.sectionTitle}>Chat</Text>
             
-            {/* Sample AI Response */}
-            <View className="mb-3 p-4 bg-green-50 rounded-lg border border-green-200">
-              <Text className="text-sm font-medium text-green-800 mb-1">AI Assistant</Text>
-              <Text className="text-gray-700 text-sm">
-                Hello! I'm your AI training assistant. I can help you with workout planning, exercise suggestions, and answer questions about your training data.
-              </Text>
-            </View>
+            {messages.map((message, index) => (
+              <View 
+                key={index} 
+                style={[
+                  styles.messageContainer,
+                  message.role === 'assistant' ? styles.assistantMessage : styles.userMessage
+                ]}
+              >
+                <Text style={[
+                  styles.messageLabel,
+                  message.role === 'assistant' ? styles.assistantLabel : styles.userLabel
+                ]}>
+                  {message.role === 'assistant' ? 'AI Assistant' : 'You'}
+                </Text>
+                <Text style={styles.messageText}>
+                  {message.content}
+                </Text>
+              </View>
+            ))}
 
-            {/* Sample User Message */}
-            <View className="mb-3 p-4 bg-blue-50 rounded-lg border border-blue-200 self-end">
-              <Text className="text-sm font-medium text-blue-800 mb-1">You</Text>
-              <Text className="text-gray-700 text-sm">
-                How can I modify my workout for today?
-              </Text>
-            </View>
+            {loading && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#3b82f6" />
+                <Text style={styles.loadingText}>AI is thinking...</Text>
+              </View>
+            )}
           </View>
 
           {/* Input Area */}
-          <View className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <View style={styles.inputContainer}>
             <TextInput
-              className="bg-white border border-gray-300 rounded-lg p-3 text-gray-900"
+              style={styles.textInput}
               placeholder="Ask me anything about your training..."
               multiline
               numberOfLines={4}
+              value={inputText}
+              onChangeText={setInputText}
+              editable={!loading}
             />
-            <View className="mt-3 flex-row justify-end">
-              <View className="px-4 py-2 bg-blue-500 rounded-lg">
-                <Text className="text-white font-medium text-sm">Send</Text>
-              </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity 
+                onPress={handleSendMessage}
+                disabled={loading || !inputText.trim()}
+                style={[
+                  styles.sendButton,
+                  (loading || !inputText.trim()) && styles.sendButtonDisabled
+                ]}
+              >
+                <Text style={styles.sendButtonText}>Send</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
           {/* Features Section */}
-          <View className="mt-6">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">Features</Text>
+          <View style={styles.featuresSection}>
+            <Text style={styles.sectionTitle}>Features</Text>
             
-            <View className="mb-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <Text className="font-medium text-gray-900 mb-1">Workout Modification</Text>
-              <Text className="text-gray-600 text-sm">
-                Get AI suggestions to modify your workouts based on your health passport and current state.
+            <View style={styles.featureCard}>
+              <Text style={styles.featureTitle}>Workout Planning</Text>
+              <Text style={styles.featureDescription}>
+                Ask for a workout plan and I'll generate one based on your health constraints and available exercises.
               </Text>
             </View>
 
-            <View className="mb-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <Text className="font-medium text-gray-900 mb-1">Semantic Search</Text>
-              <Text className="text-gray-600 text-sm">
-                Search through your workout notes and logs using natural language.
+            <View style={styles.featureCard}>
+              <Text style={styles.featureTitle}>Health-Aware Suggestions</Text>
+              <Text style={styles.featureDescription}>
+                All recommendations consider your injuries, blood work, and dietary preferences from your Health Passport.
               </Text>
             </View>
 
-            <View className="mb-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <Text className="font-medium text-gray-900 mb-1">Exercise Suggestions</Text>
-              <Text className="text-gray-600 text-sm">
-                Get personalized exercise recommendations based on your goals and restrictions.
+            <View style={styles.featureCard}>
+              <Text style={styles.featureTitle}>Exercise Database</Text>
+              <Text style={styles.featureDescription}>
+                I have access to 932+ exercises from the wger database with detailed muscle and equipment information.
               </Text>
             </View>
           </View>
