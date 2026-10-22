@@ -1,9 +1,16 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Slider } from 'react-native';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 
 export default function WorkoutScreen() {
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dates, setDates] = useState<Date[]>([]);
+  
+  // Readiness scores
+  const [sleepScore, setSleepScore] = useState(5);
+  const [sorenessScore, setSorenessScore] = useState(5);
+  const [energyScore, setEnergyScore] = useState(5);
 
   // Generate dates for the next 30 days
   useState(() => {
@@ -24,6 +31,23 @@ export default function WorkoutScreen() {
 
   const isSelected = (date: Date) => {
     return date.toDateString() === selectedDate.toDateString();
+  };
+
+  const activityTypes = [
+    { id: 'workout', label: 'Workout', icon: '🏋️' },
+    { id: 'cardio', label: 'Cardio', icon: '🏃' },
+    { id: 'stretch', label: 'Stretch/Mobility', icon: '🧘' },
+    { id: 'physio', label: 'Physio', icon: '🏥' },
+    { id: 'sports', label: 'Sports', icon: '⚽' },
+    { id: 'testing', label: 'Physical Testing', icon: '📊' },
+    { id: 'other', label: 'Others', icon: '📝' },
+  ];
+
+  const handleActivityPress = (activityType: string) => {
+    router.push({
+      pathname: '/active-session',
+      params: { activityType }
+    });
   };
 
   return (
@@ -72,10 +96,81 @@ export default function WorkoutScreen() {
         <Text style={styles.selectedDateText}>{formatDate(selectedDate)}</Text>
       </View>
 
-      {/* Placeholder for Part 2 */}
-      <View style={styles.placeholder}>
-        <Text style={styles.placeholderText}>Part 2 components coming soon...</Text>
-      </View>
+      <ScrollView style={styles.content}>
+        {/* Daily Readiness Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Daily Readiness</Text>
+          
+          <View style={styles.sliderContainer}>
+            <View style={styles.sliderRow}>
+              <Text style={styles.sliderLabel}>Sleep</Text>
+              <Text style={styles.sliderValue}>{sleepScore}/10</Text>
+            </View>
+            <Slider
+              style={styles.slider}
+              minimumValue={1}
+              maximumValue={10}
+              step={1}
+              value={sleepScore}
+              onValueChange={setSleepScore}
+              minimumTrackTintColor="#3b82f6"
+              maximumTrackTintColor="#e5e7eb"
+            />
+          </View>
+
+          <View style={styles.sliderContainer}>
+            <View style={styles.sliderRow}>
+              <Text style={styles.sliderLabel}>Soreness</Text>
+              <Text style={styles.sliderValue}>{sorenessScore}/10</Text>
+            </View>
+            <Slider
+              style={styles.slider}
+              minimumValue={1}
+              maximumValue={10}
+              step={1}
+              value={sorenessScore}
+              onValueChange={setSorenessScore}
+              minimumTrackTintColor="#3b82f6"
+              maximumTrackTintColor="#e5e7eb"
+            />
+          </View>
+
+          <View style={styles.sliderContainer}>
+            <View style={styles.sliderRow}>
+              <Text style={styles.sliderLabel}>Energy</Text>
+              <Text style={styles.sliderValue}>{energyScore}/10</Text>
+            </View>
+            <Slider
+              style={styles.slider}
+              minimumValue={1}
+              maximumValue={10}
+              step={1}
+              value={energyScore}
+              onValueChange={setEnergyScore}
+              minimumTrackTintColor="#3b82f6"
+              maximumTrackTintColor="#e5e7eb"
+            />
+          </View>
+        </View>
+
+        {/* Log an Activity Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Log an Activity</Text>
+          
+          <View style={styles.activityGrid}>
+            {activityTypes.map((activity) => (
+              <TouchableOpacity
+                key={activity.id}
+                style={styles.activityButton}
+                onPress={() => handleActivityPress(activity.id)}
+              >
+                <Text style={styles.activityIcon}>{activity.icon}</Text>
+                <Text style={styles.activityLabel}>{activity.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -160,14 +255,67 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
   },
-  placeholder: {
+  content: {
     flex: 1,
+  },
+  section: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 16,
+  },
+  sliderContainer: {
+    marginBottom: 20,
+  },
+  sliderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sliderLabel: {
+    fontSize: 16,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  sliderValue: {
+    fontSize: 16,
+    color: '#3b82f6',
+    fontWeight: '600',
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  activityGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  activityButton: {
+    width: '45%',
+    aspectRatio: 1,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    marginBottom: 8,
   },
-  placeholderText: {
-    fontSize: 16,
-    color: '#9ca3af',
+  activityIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  activityLabel: {
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+    fontWeight: '500',
   },
 });
