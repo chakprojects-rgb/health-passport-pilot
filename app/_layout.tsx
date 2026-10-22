@@ -19,6 +19,15 @@ export default function RootLayout() {
         }} 
       />
       <Tabs.Screen 
+        name="workout" 
+        options={{ 
+          title: 'Workout',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ color, fontSize: 24 }}>📅</Text>
+          )
+        }} 
+      />
+      <Tabs.Screen 
         name="passport" 
         options={{ 
           title: 'Passport',
