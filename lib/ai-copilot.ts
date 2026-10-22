@@ -291,20 +291,9 @@ You have access to a database of exercises via Supabase. When suggesting exercis
 Be concise, practical, and always consider the user's health constraints when giving advice.`;
 
   try {
-    // Filter conversation history to ensure it starts with a user message
-    // Gemini requires the first message in history to be from 'user'
-    const filteredHistory = conversationHistory
-      .filter(msg => msg.role === 'user' || msg.role === 'assistant')
-      .map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }]
-      }));
-
-    // Only include history if we have at least one user message
-    const history = filteredHistory.length > 0 ? filteredHistory : undefined;
-
+    // For now, don't pass history to avoid Gemini role ordering issues
+    // The AI will respond based on the current message and system context
     const chat = model.startChat({
-      history,
       systemInstruction: systemContext
     });
 

@@ -184,10 +184,13 @@ export default function CopilotTab() {
         ).join('\n')}\n\n### Reasoning:\n${plan.reasoning}`;
       } else {
         // Use general chat
-        const conversationHistory = messages.map(m => ({
-          role: m.role,
-          content: m.content
-        }));
+        // Filter out the initial greeting to avoid Gemini history error
+        const conversationHistory = messages
+          .filter(m => m.role !== 'assistant' || messages.indexOf(m) > 0)
+          .map(m => ({
+            role: m.role,
+            content: m.content
+          }));
         response = await chatWithCopilot(userMessage, conversationHistory);
       }
 
