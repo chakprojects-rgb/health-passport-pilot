@@ -11,7 +11,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Constants from 'expo-constants';
 import { supabase } from './supabase';
-import { db } from './database';
+import { db, initializeDatabase } from './database';
 
 // Types
 export interface HealthPassportConstraints {
@@ -104,8 +104,16 @@ async function fetchRelevantExercises(
  */
 async function getHealthPassportConstraints(): Promise<HealthPassportConstraints> {
   try {
+    // Initialize database if not already initialized
+    const database = await initializeDatabase();
+    
+    if (!database) {
+      console.warn('Database not initialized, returning empty constraints');
+      return {};
+    }
+
     // Query the Users collection for the current user's health passport
-    const users = await db.users.find().exec();
+    const users = await database.users.find().exec();
     
     if (users.length === 0) {
       return {};
@@ -283,11 +291,20 @@ You have access to a database of exercises via Supabase. When suggesting exercis
 Be concise, practical, and always consider the user's health constraints when giving advice.`;
 
   try {
-    const chat = model.startChat({
-      history: conversationHistory.map(msg => ({
-        role: msg.role as 'user' | 'model',
+    // Filter conversation history to ensure it starts with a user message
+    // Gemini requires the first message in history to be from 'user'
+    const filteredHistory = conversationHistory
+      .filter(msg => msg.role === 'user' || msg.role === 'assistant')
+      .map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.content }]
-      })),
+      }));
+
+    // Only include history if we have at least one user message
+    const history = filteredHistory.length > 0 ? filteredHistory : undefined;
+
+    const chat = model.startChat({
+      history,
       systemInstruction: systemContext
     });
 
