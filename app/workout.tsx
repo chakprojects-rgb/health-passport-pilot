@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Slider } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 
 export default function WorkoutScreen() {
@@ -13,7 +13,7 @@ export default function WorkoutScreen() {
   const [energyScore, setEnergyScore] = useState(5);
 
   // Generate dates for the next 30 days
-  useState(() => {
+  useEffect(() => {
     const today = new Date();
     const dateArray: Date[] = [];
     for (let i = 0; i < 30; i++) {
@@ -22,7 +22,7 @@ export default function WorkoutScreen() {
       dateArray.push(date);
     }
     setDates(dateArray);
-  });
+  }, []);
 
   const formatDate = (date: Date) => {
     const options = { weekday: 'short', month: 'short', day: 'numeric' };

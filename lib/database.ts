@@ -162,8 +162,13 @@ export async function createDatabase() {
 export let db: any = null;
 
 export async function initializeDatabase() {
-  if (!db) {
-    db = await createDatabase();
+  try {
+    if (!db) {
+      db = await createDatabase();
+    }
+    return db;
+  } catch (error) {
+    console.error('Error initializing database:', error);
+    return null;
   }
-  return db;
 }

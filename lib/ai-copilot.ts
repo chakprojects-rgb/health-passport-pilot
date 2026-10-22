@@ -115,7 +115,7 @@ async function getHealthPassportConstraints(): Promise<HealthPassportConstraints
     // Query the Users collection for the current user's health passport
     const users = await database.users.find().exec();
     
-    if (users.length === 0) {
+    if (!users || users.length === 0) {
       return {};
     }
 
@@ -130,6 +130,7 @@ async function getHealthPassportConstraints(): Promise<HealthPassportConstraints
     };
   } catch (error) {
     console.error('Error reading health passport from RxDB:', error);
+    // Return empty constraints on error to prevent app crash
     return {};
   }
 }
