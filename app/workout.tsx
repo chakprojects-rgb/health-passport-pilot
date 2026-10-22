@@ -1,6 +1,7 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Slider } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
+import { Slider } from '@react-native-community/slider';
 
 export default function WorkoutScreen() {
   const router = useRouter();
@@ -115,6 +116,7 @@ export default function WorkoutScreen() {
               onValueChange={setSleepScore}
               minimumTrackTintColor="#3b82f6"
               maximumTrackTintColor="#e5e7eb"
+              thumbTintColor="#3b82f6"
             />
           </View>
 
@@ -132,6 +134,7 @@ export default function WorkoutScreen() {
               onValueChange={setSorenessScore}
               minimumTrackTintColor="#3b82f6"
               maximumTrackTintColor="#e5e7eb"
+              thumbTintColor="#3b82f6"
             />
           </View>
 
@@ -149,6 +152,7 @@ export default function WorkoutScreen() {
               onValueChange={setEnergyScore}
               minimumTrackTintColor="#3b82f6"
               maximumTrackTintColor="#e5e7eb"
+              thumbTintColor="#3b82f6"
             />
           </View>
         </View>

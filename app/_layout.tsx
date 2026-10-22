@@ -10,15 +10,6 @@ export default function RootLayout() {
       headerShown: false,
     }}>
       <Tabs.Screen 
-        name="index" 
-        options={{ 
-          title: 'Training',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 24 }}>🏋️</Text>
-          )
-        }} 
-      />
-      <Tabs.Screen 
         name="workout" 
         options={{ 
           title: 'Workout',
@@ -30,18 +21,9 @@ export default function RootLayout() {
       <Tabs.Screen 
         name="passport" 
         options={{ 
-          title: 'Passport',
+          title: 'Health Passport',
           tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 24 }}>📋</Text>
-          )
-        }} 
-      />
-      <Tabs.Screen 
-        name="exercises" 
-        options={{ 
-          title: 'Exercises',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 24 }}>💪</Text>
+            <Text style={{ color, fontSize: 24 }}>�</Text>
           )
         }} 
       />
@@ -52,6 +34,25 @@ export default function RootLayout() {
           tabBarIcon: ({ color }) => (
             <Text style={{ color, fontSize: 24 }}>🤖</Text>
           )
+        }} 
+      />
+      {/* Hide other tabs from navigation bar */}
+      <Tabs.Screen 
+        name="index" 
+        options={{ 
+          href: null
+        }} 
+      />
+      <Tabs.Screen 
+        name="exercises" 
+        options={{ 
+          href: null
+        }} 
+      />
+      <Tabs.Screen 
+        name="active-session" 
+        options={{ 
+          href: null
         }} 
       />
     </Tabs>
